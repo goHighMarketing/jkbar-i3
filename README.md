@@ -2,7 +2,10 @@
 
 A Quickshell Bar for i3 WM
 
-This is a pet project I built for my i3 desktop as an alternative to Polybar.  
+This is a pet project I built for my i3 desktop as an alternative to Polybar. 
+
+My goal was to keep this bar light in resources.
+
 I wanted something a little more modern that I could enjoy in an X11 environment.
 
 New:  
