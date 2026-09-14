@@ -40,10 +40,10 @@ The obvious minimum requirements:  BSPWM, sxhkd, rofi, a polkit (ie, lxpolkit, o
 
 Make a folder in your config directory (ie - ~/.config/i3/jkbar) and extract the qml files there.
 
-Add this to your config startup:  
+Add this to your i3 config:  
 
 			
-			qs -p ~/.config/i3/jkbar/shell.qml &
+			exec_always --no-startup-id qs -p ~/.config/i3/jkbar/shell.qml -d -n >/dev/null 2>&1
 
 My video featuring JKBar can be found here:
 
