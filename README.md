@@ -43,7 +43,8 @@ Make a folder in your config directory (ie - ~/.config/i3/jkbar) and extract the
 Add this to your i3 config:  
 
 			
-			exec_always --no-startup-id qs -p ~/.config/i3/jkbar/shell.qml -d -n >/dev/null 2>&1
+			exec_always --no-startup-id killall qs &
+			exec_always --no-startup-id sleep 1 && qs -p ~/.config/i3/jkbar/shell.qml -d -n >/dev/null 2>&1
 
 My video featuring JKBar can be found here:
 
