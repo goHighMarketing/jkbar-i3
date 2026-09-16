@@ -164,7 +164,7 @@ PanelWindow {
                                 Quickshell.execDetached(["feh", "--bg-fill", modelData.filePath]);
                                 overlayShield.visible = false; 
                             } else if (mouse.button === Qt.RightButton) {
-                                Quickshell.execDetached(["feh", "-g", "1024x720", modelData.filePath]);
+                              //  Quickshell.execDetached(["feh", "-g", "1024x720", modelData.filePath]);
                             }
                         }
                     }
