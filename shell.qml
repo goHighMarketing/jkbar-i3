@@ -1,8 +1,8 @@
-//@ pragma UseQApplication
+//@ pragma UseQApplication 
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import Quickshell
+import Quickshell 
 import Quickshell.Io
 
 // Uses "Twemoji Mozilla" fonts for full colour emojis, or use "JetBrainsMono Nerd Font"
@@ -28,6 +28,12 @@ ShellRoot {
         activePreviewUrl = imgUrl;
         isPreviewOpen = true;
     }
+
+    // Place this near the root level of your shell.qml file
+	WallpaperSelector {
+	    id: wallpaperOverlay
+	}
+
 
     // --- DATA FETCHING & PROCESSES ---
 
@@ -168,216 +174,59 @@ ShellRoot {
                     Layout.alignment: Qt.AlignVCenter
                 }
 
-                // WALLPAPER TRIGGER BUTTON
-                Rectangle {
-                    id: wallpaperButton
-                    width: 24
-                    height: 24
-                    color: wallpaperMouse.containsMouse ? "#313244" : "transparent"
-                    border.color: "white"
-                    border.width: 1
-                    radius: 4
+                // --- WALLPAPER SELECTOR BUTTON TRAY ICON ---
+		Rectangle {
+		    width: wallpaperButtonRow.implicitWidth + 12
+		    height: 24
+		    radius: 6
+		    color: wallpaperButtonMouse.containsMouse ? "#313244" : "transparent"
+		    Layout.alignment: Qt.AlignVCenter
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: "🖼️"
-                        font.pixelSize: 12
-                        font.family: "Twemoji Mozilla"
-                        color: "#b4befe"
-                    }
+		    // Smooth hover visual fade animation
+		    Behavior on color {
+			ColorAnimation { duration: 150 }
+		    } 
 
-                    MouseArea {
-                        id: wallpaperMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: {
-                            // 1. Toggles our full-screen shield window state cleanly on click
-                            wallpaperFullShield.visible = !wallpaperFullShield.visible;
+		    RowLayout {
+			id: wallpaperButtonRow
+			anchors.centerIn: parent
+			spacing: 6
 
-                            // 2. FIXED: If the drawer just opened, tell our selector component to refresh!
-                            if (wallpaperDrawerWindow.visible) {
-                                // Reaches down inside the container rectangle to target your wallpaper selector instantly
-                                wallpaperSelectorComponent.refreshList();
-                            }
-                        }
-                    }
-                }
+			// 1. NERD FONT PHOTO/GALLERY GLYPH ICON
+			Text {
+			    text: "🖼️ " // Beautiful image gallery icon glyph 
+			    font.family: "Twemoji Mozilla" 
+			    font.pixelSize: 14
+			    color: "#cba6f7" // Soft Catppuccin Mauve / Pastel Purple
+			    Layout.alignment: Qt.AlignVCenter
+			}
 
-                // --- X11 BULLETPROOF WALLPAPER DISMISSAL CONTAINER ---
-                // Instead of a standalone popup, we spin up a full screen invisible layer
-                PanelWindow {
-                    id: wallpaperFullShield
-                    visible: false
+			// 2. COMPACT LABEL DISPLAY TEXT
+			Text {
+			    text: "WALL"
+			    font.family: "JetBrainsMono Nerd Font"
+			    font.pixelSize: 11
+			    font.bold: true
+			    color: wallpaperButtonMouse.containsMouse ? "#ffffff" : "#cdd6f4"
+			    Layout.alignment: Qt.AlignVCenter
+			}
+		    }
 
-                    // Lock this panel to expand across the entire monitor canvas surface
-                    anchors.top: true
-                    anchors.bottom: true
-                    anchors.left: true
-                    anchors.right: true
+		    // --- INTERACTIVE CLICK CAPABILITY ---
+		    MouseArea {
+			id: wallpaperButtonMouse
+			anchors.fill: parent
+			hoverEnabled: true
+			// cursorShape: Qt.PointingHandCursor 
 
-                    // Force transparency so your terminal windows show through perfectly
-                    color: "#00000000"
+			onClicked: {
+			    // Instantly toggle the full-screen thumbnail overlay dashboard visible!
+			    wallpaperOverlay.visible = true;
+			}
+		    }
+		}
 
-                    // Instructs i3 to completely ignore this frame layer for tiling allocation
-                    exclusionMode: ExclusionMode.None
 
-                    // ================= FULL SCREEN MOUSE SHIELD =================
-                    // Clicking ANY empty workspace zone outside your selector box closes it instantly!
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            wallpaperFullShield.visible = false;
-                        }
-                    }
-                    // ============================================================
-
-                    // --- THE ACTUAL VISUAL WALLPAPER DRAWER RECTANGLE ---
-                    // Nesting the visual geometry here maps it right back to your panel bar coordinates
-                    Rectangle {
-                        id: wallpaperDrawerWindow
-                        width: 1850
-                        height: 250
-                        color: "transparent" // Let the selector component's theme color pass through
-
-                        // Positioning calculations matching your exact old offsets
-                        x: mainBar.x + (mainBar.width - 1850) - 20 // Adjust coordinates to align with your top button
-                        y: 46
-
-                        // Prevent pointer clicks inside the actual gallery card from triggering the shield close
-                        MouseArea {
-                            anchors.fill: parent
-                            propagateComposedEvents: false
-                            onClicked: (mouse) => mouse.accepted = true
-                        }
-
-                        WallpaperSelector {
-                            id: wallpaperSelectorComponent
-                            anchors.fill: parent
-                        }
-                    }
-                }
-
-                // --- X11 BULLETPROOF PREVIEW POPUP CONTAINER ---
-                PanelWindow {
-                    id: wallpaperPreviewShield
-                    visible: root.isPreviewOpen
-
-                    // Lock this panel to expand across the entire monitor canvas surface
-                    anchors.top: true
-                    anchors.bottom: true
-                    anchors.left: true
-                    anchors.right: true
-
-                    // Force transparency so your wallpaper gallery remains beautifully visible behind it
-                    color: "#00000000"
-                    exclusionMode: ExclusionMode.None
-
-                    // ================= FULL SCREEN MOUSE SHIELD =================
-                    // Clicking ANY area outside the 1024x720 preview panel drops it out of view instantly!
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            root.isPreviewOpen = false;
-                            root.activePreviewUrl = "";
-                        }
-                    }
-                    // ============================================================
-
-                    // --- THE ACTUAL VISUAL 1024x720 PREVIEW WINDOW ---
-                    Rectangle {
-                        width: 1024
-                        height: 720
-                        color: "#181825" // Catppuccin Mocha Crust
-                        radius: 12
-
-                        // Locks the large preview frame dead-center on your active monitor canvas
-                        anchors.centerIn: parent
-
-                        // Stop clicks inside the picture card from closing the panel accidentally
-                        MouseArea {
-                            anchors.fill: parent
-                            propagateComposedEvents: false
-                            onClicked: (mouse) => mouse.accepted = true
-                        }
-
-                        // Outer border accent path
-                        Rectangle {
-                            anchors.fill: parent
-                            color: "transparent"
-                            border.color: "#313244"
-                            border.width: 2
-                            radius: 12
-                            z: 2
-                        }
-
-                        // High-fidelity image layout viewport
-                        Image {
-                            anchors.fill: parent
-                            anchors.margins: 4
-                            source: root.activePreviewUrl
-                            fillMode: Image.PreserveAspectFit // Preserves ratio gracefully inside the box limits
-                            asynchronous: true
-                            smooth: true
-                        }
-
-                        // Subtle metadata overlay tab at the bottom
-                        Rectangle {
-                            width: parent.width - 8
-                            height: 35
-                            color: "#11111b"
-                            opacity: 0.85
-                            anchors.bottom: parent.bottom
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.bottomMargin: 4
-                            radius: 8
-                            z: 3
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "Left-Click anywhere outside this preview to close"
-                                font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 11
-                                color: "#a6adc8"
-                            }
-                        }
-                    }
-                } // End of Preview Container Window
-
-               // NATIVE QUICKSHELL POPUP WINDOW
-                PopupWindow {
-                    id: wallpaperPopup
-                    visible: false
-
-                    implicitWidth: 1850
-                    implicitHeight: 250
-
-                    // Connect the popup to the main bar window
-                    anchor.window: mainBar
-
-                    // POSITIONING MATRIX:
-                    anchor.rect: wallpaperButton.mapToItem(mainBar.contentItem, -296, 40, wallpaperButton.width, wallpaperButton.height)
-
-                    // Tells Quickshell to watch global pointer tracking hooks
-                    grabFocus: true
-
-                    // ================= CLICK DISMISSAL TRACKER =================
-                    Connections {
-                        target: wallpaperPopup
-
-                        // Fires the millisecond you click outside the 1850x250 rectangle
-                        // and focus shifts back to your terminal, browser, or i3 desktop background
-                        function onActiveChanged() {
-                            if (!wallpaperPopup.active) {
-                                wallpaperPopup.visible = false;
-                            }
-                        }
-                    }
-                    // ===========================================================
-
-                    WallpaperSelector {
-                        anchors.fill: parent
-                    }
-                }
 
                 // --- THE EXSTING REPEATER FOR WORKSPACES ---
                 Row {
